@@ -48,46 +48,46 @@ float max(int num_args, ...) // VARIABLE MUST BE FLOAT (EX: 70.0, 980.0 NOT 70 O
 }
 
 
-static float mfTriang(float x, float a, float b, float c) {
-  float out;
+float mfTriang(float x, float a, float b, float c) {
+  float out_tri;
 
   if (x < a) {
-    out = 0;
+	  out_tri = 0;
   } else if ((x >= a) && (x <= b)) {
-    out = (x - a) / (b - a);
+	  out_tri = (x - a) / (b - a);
   } else if ((x >= b) && (x <= c)) {
-    out = (c - x) / (c - b);
+	  out_tri = (c - x) / (c - b);
   } else {
-    out = 0;
+	  out_tri = 0;
   }
 
-  return out;
+  return out_tri;
 }
 
-static float mfTrap(float x, float a, float b, float c, float d) {
-  float out;
+float mfTrap(float x, float a, float b, float c, float d) {
+  float out_trap;
 
   if (x < a) {
-    out = 0;
+	  out_trap = 0;
   } else if ((x >= a) && (x <= b)) {
     if (a == b) {
-      out = 1;
+    	out_trap = 1;
     } else {
-      out = (x - a) / (b - a);
+    	out_trap = (x - a) / (b - a);
     }
   } else if ((x >= b) && (x <= c)) {
-    out = 1;
+	  out_trap = 1;
   } else if ((x >= c) && (x <= d)) {
     if (c == d) {
-      out = 1;
+    	out_trap = 1;
     } else {
-      out = (d - x) / (d - c);
+    	out_trap = (d - x) / (d - c);
     }
   } else {
-    out = 0;
+	  out_trap = 0;
   }
 
-  return out;
+  return out_trap;
 }
 
 float run_fuzzy(float x1, float x2) {
@@ -97,7 +97,7 @@ float run_fuzzy(float x1, float x2) {
   thetadot_struct theta_dot;
   uk_struct u_dot;
 
-  // calculate anpha 1 (0->1)
+  // calculate alpha 1 (0->1)
   c1 = 0.3f;
   c2 = 0.22f;
   c3 = 0.18f;
@@ -107,7 +107,7 @@ float run_fuzzy(float x1, float x2) {
   theta.PS = mfTrap(x1, c3, c2, c1, 1);
   theta.PB = mfTrap(x1, c2, c1, 1, 2);
 
-  // calculate anpha 2 (0->1)
+  // calculate alpha 2 (0->1)
   d1 = 0.25f;
   d2 = 0.05f;
   d3 = 0.6f;

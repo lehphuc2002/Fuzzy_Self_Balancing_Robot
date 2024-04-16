@@ -22,16 +22,23 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "mpu6050.h"
+#include "fuzzy.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+typedef enum
+{
+	RIGHT = 0,
+	LEFT,
+}select;
+select select_rotate;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define THETA_OFFSET -2.5
+#define THETA_OVER 65
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -44,10 +51,12 @@ I2C_HandleTypeDef hi2c1;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
+MPU6050_t mpu_here;
 
 /* USER CODE END PV */
 
@@ -58,13 +67,22 @@ static void MX_TIM3_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
-
+void init_all();
+void motor_forward(select rotate);
+void motor_reverse(select rotate);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+/*
+ * Some configs:
+ * PB6-PB7: control left motor, using PWM TIM3 CH2, PB10 = 1 --> clockwise, PB5 = 1 --> anticlockwise
+ * PA6-PA7: control right motor, using PWM TIM3 CH1, PA6 = 1 --> anticlockwsie, PA7 = 1 --> clockwise
+ * --> forward: PB10 = 0, PB5 = 1; PA6 = 0, PA7 = 1
+ * --> reverse: PB10 = 1; PB5 = 0; PA6 = 1; PA7 = 0
+ */
 /* USER CODE END 0 */
 
 /**
@@ -100,20 +118,27 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM1_Init();
   MX_I2C1_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  init_all();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 0);
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, 1);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, 0);
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1);
-	  htim3.Instance->CCR1 = htim3.Instance->ARR - 100;
-	  htim3.Instance->CCR2 = htim3.Instance->ARR - 100;
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, 1  );
+//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, 1);
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, 0);
+//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, 0);
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, 1);
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 0);
+	  htim3.Instance->CCR1 = (htim3.Instance->ARR)*0.6;
+	  htim4.Instance->CCR2 = (htim4.Instance->ARR)*0.6;
+//	  htim3.Instance->CCR2 = 0;
+//	  htim3.Instance->CCR1 = 0;
+//	  htim3.Instance->CCR2 = htim3.Instance->ARR - 100;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -281,14 +306,63 @@ static void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
   /* USER CODE BEGIN TIM3_Init 2 */
 
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 63;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 99;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+  HAL_TIM_MspPostInit(&htim4);
 
 }
 
@@ -349,7 +423,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, GPIO_OUT_LED_Pin|GPIO_PIN_5|IN1_Pin|IN2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_5, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
@@ -365,8 +439,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB6 PB7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
+  /*Configure GPIO pins : PB10 PB11 PB5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -382,7 +456,7 @@ void init_all()
 	MPU6050_Init(&hi2c1);
 	HAL_TIM_Base_Start_IT(&htim1);
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 }
 //void PID_Process(double setpoint, double now_value, PID_control *Part_PID)
 //{
@@ -398,43 +472,43 @@ void init_all()
 //	pre_error = error;
 //	pre_outputPID = output_PID;
 //}
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	time = HAL_GetTick();
-	if(htim1.Instance == TIM1)
-	{
-		MPU6050_Read_All(&hi2c1, &mpu_here);
-		  if((mpu_here.KalmanAngleY <= offset_MPU + 8 && mpu_here.KalmanAngleY >= offset_MPU + -5) || mpu_here.KalmanAngleY < -55 || mpu_here.KalmanAngleY > 55)
-		  {
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, 0);
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, 0);
-			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, 0);
-			  htim2.Instance->CCR3 = 0;
-			  htim2.Instance->CCR4 = 0;
-			  output_PID = 0;
-		  }
-		  else if(mpu_here.KalmanAngleY < 0)
-		  {
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, 0);
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // 14_0; 13_1 la ben trai lùi
-			  htim2.Instance->CCR3 = output_PID*20;
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, 0);  // 15_0; 4_1 la ben phải tới
-			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, 1);
-			  htim2.Instance->CCR4 = output_PID*20;
-		  }
-		  else if(mpu_here.KalmanAngleY > 0)
-		  {
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, 1);
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-			  htim2.Instance->CCR3 = -output_PID*20;
-			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, 1);
-			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, 0);
-			  htim2.Instance->CCR4 = -output_PID*20;
-		  }
-		  end = HAL_GetTick() - time;
-	}
-}
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+//{
+//	time = HAL_GetTick();
+//	if(htim1.Instance == TIM1)
+//	{
+//		MPU6050_Read_All(&hi2c1, &mpu_here);
+//		  if((mpu_here.KalmanAngleY <= THETA_OFFSET + 6 && mpu_here.KalmanAngleY >= THETA_OFFSET + -4) || mpu_here.KalmanAngleY < -55 || mpu_here.KalmanAngleY > 55)
+//		  {
+//			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, 0);
+//			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
+//			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, 0);
+//			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, 0);
+//			  htim2.Instance->CCR3 = 0;
+//			  htim2.Instance->CCR4 = 0;
+//			  output_PID = 0;
+//		  }
+//		  else if(mpu_here.KalmanAngleY < 0)
+//		  {
+//			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, 0);
+//			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1); // 14_0; 13_1 la ben trai lùi
+//			  htim2.Instance->CCR3 = output_PID*20;
+//			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, 0);  // 15_0; 4_1 la ben phải tới
+//			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, 1);
+//			  htim2.Instance->CCR4 = output_PID*20;
+//		  }
+//		  else if(mpu_here.KalmanAngleY > 0)
+//		  {
+//			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, 1);
+//			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
+//			  htim2.Instance->CCR3 = -output_PID*20;
+//			  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, 1);
+//			  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, 0);
+//			  htim2.Instance->CCR4 = -output_PID*20;
+//		  }
+//		  end = HAL_GetTick() - time;
+//	}
+//}
 void motor_forward(select rotate)
 {
 	switch(rotate)
