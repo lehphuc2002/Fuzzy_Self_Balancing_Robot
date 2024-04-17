@@ -135,8 +135,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  motor_forward();
-	  pwm_out(0.6);
+//	  motor_forward();
+//	  pwm_out(0.6);
 
 
 
@@ -492,12 +492,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Fuzzy_Process()
 {
 	Parameters.theta = MPU6050.KalmanAngleY;
-	Parameters.theta_dot = (MPU6050.Gy) * RAD_TO_DEG;
-	Parameters.input[0] = Parameters.theta * (1/K_THETA);
-	Parameters.input[1] = Parameters.theta_dot * (1/K_THETA_DOT);
+	Parameters.theta_dot = (MPU6050.Gy);
+	Parameters.input[0] = Parameters.theta * (1.0f/K_THETA);
+	Parameters.input[1] = Parameters.theta_dot * (1.0f/K_THETA_DOT);
 	limit_range(&(Parameters.input[0]));
 	limit_range(&(Parameters.input[1]));
 	Parameters.uk_fuzzy = (run_fuzzy(Parameters.input[0], Parameters.input[1])) * K_UK_FUZZY;
+	Parameters.uk_fuzzy *= (100.0f/3199); //convert uk (-3199->3199 to -100->100)
 }
 
 void motor_forward()

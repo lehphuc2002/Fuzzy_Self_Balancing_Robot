@@ -9,7 +9,7 @@
 ../Core/Src/main.c:459:6:Init_All	2
 ../Core/Src/main.c:467:6:HAL_TIM_PeriodElapsedCallback	8
 ../Core/Src/main.c:492:6:Fuzzy_Process	1
-../Core/Src/main.c:503:6:motor_forward	1
-../Core/Src/main.c:511:6:motor_reverse	1
-../Core/Src/main.c:519:6:pwm_out	3
-../Core/Src/main.c:544:6:Error_Handler	1
+../Core/Src/main.c:504:6:motor_forward	1
+../Core/Src/main.c:512:6:motor_reverse	1
+../Core/Src/main.c:520:6:pwm_out	3
+../Core/Src/main.c:545:6:Error_Handler	1

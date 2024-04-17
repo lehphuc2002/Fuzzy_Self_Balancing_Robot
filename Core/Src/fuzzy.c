@@ -92,12 +92,12 @@ float mfTrap(float x, float a, float b, float c, float d) {
 
 float run_fuzzy(float x1, float x2) {
   float out;
-  float r[25]; // 25 value beta <=> 25 rule
+  float r[25]; // 25 rules
   theta_struct theta;
   thetadot_struct theta_dot;
   uk_struct u_dot;
 
-  // calculate alpha 1 (0->1)
+  // calculate theta (-1->1)
   c1 = 0.3f;
   c2 = 0.22f;
   c3 = 0.18f;
@@ -107,7 +107,7 @@ float run_fuzzy(float x1, float x2) {
   theta.PS = mfTrap(x1, c3, c2, c1, 1);
   theta.PB = mfTrap(x1, c2, c1, 1, 2);
 
-  // calculate alpha 2 (0->1)
+  // calculate theta_dot (-1->1)
   d1 = 0.25f;
   d2 = 0.05f;
   d3 = 0.6f;
@@ -117,7 +117,7 @@ float run_fuzzy(float x1, float x2) {
   theta_dot.PS = mfTriang(x2, d1, d2, d3);
   theta_dot.PB = mfTriang(x2, d2, d3, 1);
 
-  // calculate beta (0->1) base on MAX-MIN, "and" => MIN
+  // calculate uk_fuzzy (-1->1) base on MAX-MIN, "and" => MIN
 
   r[0] = min(theta.NB, theta_dot.NB); // NB
 
