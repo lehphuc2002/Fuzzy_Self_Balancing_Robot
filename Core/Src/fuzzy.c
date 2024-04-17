@@ -111,11 +111,11 @@ float run_fuzzy(float x1, float x2) {
   d1 = 0.25f;
   d2 = 0.05f;
   d3 = 0.6f;
-  theta_dot.NB = mfTriang(x1, -2, -1, -d1); // // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (thetadot)
-  theta_dot.NS = mfTriang(x1, -d3, -d1, -d2);
-  theta_dot.ZE = mfTrap(x1, -d1, -d2, d2, d1);
-  theta_dot.PS = mfTriang(x1, d1, d2, d3);
-  theta_dot.PB = mfTriang(x1, d2, d3, 1);
+  theta_dot.NB = mfTriang(x2, -2, -1, -d1); // // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (thetadot)
+  theta_dot.NS = mfTriang(x2, -d3, -d1, -d2);
+  theta_dot.ZE = mfTrap(x2, -d1, -d2, d2, d1);
+  theta_dot.PS = mfTriang(x2, d1, d2, d3);
+  theta_dot.PB = mfTriang(x2, d2, d3, 1);
 
   // calculate beta (0->1) base on MAX-MIN, "and" => MIN
 
@@ -194,7 +194,7 @@ float run_fuzzy(float x1, float x2) {
   float sum_beta_y;
   sum_beta = u_dot.NB + u_dot.NM + u_dot.NS + u_dot.ZE + u_dot.PS + u_dot.PM + u_dot.PB;
   sum_beta_y = -1 * u_dot.NB + -0.75 * u_dot.NM + -0.45 * u_dot.NS + 0 * u_dot.ZE + 0.45 * u_dot.PS + 0.75 * u_dot.PM + 1 * u_dot.PB;
-  out = sum_beta_y / sum_beta; // trung binh co trong so btvn03
+  out = sum_beta_y / sum_beta; // Homework3 :>
 
   return out;
 }
