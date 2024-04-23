@@ -37,8 +37,8 @@ typedef struct {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define THETA_OFFSET -2.5
-#define THETA_OVER 65
+#define THETA_OFFSET 2.5
+#define THETA_OVER 50
 #define PI 3.14159265358979323846
 #define K_THETA 8.2
 #define K_THETA_DOT 100
@@ -74,10 +74,10 @@ static void MX_I2C1_Init(void);
 static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
 void Init_All();
+void Fuzzy_Process();
 void motor_forward();
 void motor_reverse();
 void pwm_out(float duty);
-void Fuzzy_Process();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -128,22 +128,14 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   Init_All();
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	  motor_forward();
-//	  pwm_out(0.6);
 
 
-
-
-//	  htim3.Instance->CCR2 = 0;
-//	  htim3.Instance->CCR1 = 0;
-//	  htim3.Instance->CCR2 = htim3.Instance->ARR - 100;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -466,39 +458,46 @@ void Init_All()
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-//	time = HAL_GetTick();
 	if(htim->Instance == htim1.Instance)
 	{
 		MPU6050_Read_All(&hi2c1, &MPU6050);
 		Fuzzy_Process();
-		if ((Parameters.theta <= THETA_OFFSET + 4 && Parameters.theta >= THETA_OFFSET - 2)
-			|| Parameters.theta < -THETA_OVER || Parameters.theta > THETA_OVER)
+//		if ((Parameters.theta <= THETA_OFFSET + 4 && Parameters.theta >= THETA_OFFSET - 2)
+//			|| Parameters.theta < -THETA_OVER || Parameters.theta > THETA_OVER)
+//		{
+//			pwm_out(0);
+//		}
+		if (Parameters.theta < -THETA_OVER || Parameters.theta > THETA_OVER)
 		{
 			pwm_out(0);
 		}
-		else if(Parameters.uk_fuzzy > 0.4)
+		else if(Parameters.uk_fuzzy > 0.2)
+		{
+			motor_forward();
+			pwm_out(Parameters.uk_fuzzy);
+		}
+		else if(Parameters.uk_fuzzy < -0.2)
 		{
 			motor_reverse();
 			pwm_out(Parameters.uk_fuzzy);
 		}
-		else if(Parameters.uk_fuzzy < -0.4)
+		else
 		{
-			motor_forward();
-			pwm_out(Parameters.uk_fuzzy);
+			pwm_out(0);
 		}
 	}
 }
 
 void Fuzzy_Process()
 {
-	Parameters.theta = MPU6050.KalmanAngleY;
-	Parameters.theta_dot = (MPU6050.Gy);
+	Parameters.theta = MPU6050.KalmanAngleY + THETA_OFFSET;
+	Parameters.theta_dot = MPU6050.Gy;
 	Parameters.input[0] = Parameters.theta * (1.0f/K_THETA);
 	Parameters.input[1] = Parameters.theta_dot * (1.0f/K_THETA_DOT);
 	limit_range(&(Parameters.input[0]));
 	limit_range(&(Parameters.input[1]));
 	Parameters.uk_fuzzy = (run_fuzzy(Parameters.input[0], Parameters.input[1])) * K_UK_FUZZY;
-	Parameters.uk_fuzzy *= (100.0f/3199); //convert uk (-3199->3199 to -100->100)
+	Parameters.uk_fuzzy *= (1.0f/3199); //convert uk (-3199->3199 to -100->100)
 }
 
 void motor_forward()
