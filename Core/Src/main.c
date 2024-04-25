@@ -38,9 +38,9 @@ typedef struct {
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define THETA_OFFSET 2.5
-#define THETA_OVER 50
+#define THETA_OVER 40
 #define PI 3.14159265358979323846
-#define K_THETA 8.2
+#define K_THETA 10
 #define K_THETA_DOT 100
 #define K_UK_FUZZY 3199
 /* USER CODE END PD */
@@ -62,6 +62,7 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 MPU6050_t MPU6050;
 Para_Robot Parameters;
+char forward, reverse;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -77,6 +78,7 @@ void Init_All();
 void Fuzzy_Process();
 void motor_forward();
 void motor_reverse();
+void motor_stop();
 void pwm_out(float duty);
 /* USER CODE END PFP */
 
@@ -85,7 +87,7 @@ void pwm_out(float duty);
 
 /*
  * Some configs:
- * PB10-PB5: control left motor, using PWM TIM3 CH2, PB10 = 1 --> clockwise, PB5 = 1 --> anticlockwise
+ * PB10-PB5: control left motor, using PWM TIM4 CH2, PB10 = 1 --> clockwise, PB5 = 1 --> anticlockwise
  * PA6-PA7: control right motor, using PWM TIM3 CH1, PA6 = 1 --> anticlockwsie, PA7 = 1 --> clockwise
  * --> forward: PB10 = 0, PB5 = 1 (left); PA6 = 0, PA7 = 1 (right)
  * --> reverse: PB10 = 1; PB5 = 0 (left); PA6 = 1; PA7 = 0 (right)
@@ -469,21 +471,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //		}
 		if (Parameters.theta < -THETA_OVER || Parameters.theta > THETA_OVER)
 		{
-			pwm_out(0);
+			motor_stop();
 		}
-		else if(Parameters.uk_fuzzy > 0.2)
+		else if(Parameters.uk_fuzzy > 0)
 		{
 			motor_forward();
 			pwm_out(Parameters.uk_fuzzy);
+			forward = 1; //debug
+			reverse = 0;
 		}
-		else if(Parameters.uk_fuzzy < -0.2)
+		else if(Parameters.uk_fuzzy < 0)
 		{
 			motor_reverse();
-			pwm_out(Parameters.uk_fuzzy);
+			pwm_out(-(Parameters.uk_fuzzy));
+			forward = 0; //debug
+			reverse = 1;
 		}
+
 		else
 		{
-			pwm_out(0);
+			motor_stop();
 		}
 	}
 }
@@ -516,23 +523,20 @@ void motor_reverse()
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, 1); //IN4
 }
 
+void motor_stop()
+{
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, 0); //IN1
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 0); //IN2
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, 0); //IN3
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, 0); //IN4
+	pwm_out(0);
+}
+
 void pwm_out(float duty) //duty 0->1 (not 0->100), uk -1->1
 {
-	if (duty > 0)
-	{
-		htim3.Instance->CCR1 = (htim3.Instance->ARR) * (duty+0.02); //hardware
-		htim4.Instance->CCR2 = (htim4.Instance->ARR) * (duty-0.05);
-	}
-	else if (duty < 0)
-	{
-		htim3.Instance->CCR1 = (htim3.Instance->ARR) * ((-duty)+0.02); //hardware
-		htim4.Instance->CCR2 = (htim4.Instance->ARR) * ((-duty)-0.05);
-	}
-	else
-	{
-		htim3.Instance->CCR1 = 0;
-		htim4.Instance->CCR2 = 0;
-	}
+	if (duty > 1) duty = 1;
+	htim3.Instance->CCR1 = (htim3.Instance->ARR) * (duty + 0.025); //hardware
+	htim4.Instance->CCR2 = (htim4.Instance->ARR) * (duty);
 }
 
 /* USER CODE END 4 */

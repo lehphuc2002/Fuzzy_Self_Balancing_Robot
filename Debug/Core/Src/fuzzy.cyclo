@@ -1,6 +1,6 @@
-../Core/Src/fuzzy.c:23:7:min	2
-../Core/Src/fuzzy.c:30:7:max	4
-../Core/Src/fuzzy.c:51:7:mfTriang	6
-../Core/Src/fuzzy.c:67:7:mfTrap	10
-../Core/Src/fuzzy.c:93:7:run_fuzzy	1
-../Core/Src/fuzzy.c:202:6:limit_range	3
+../Core/Src/fuzzy.c:47:7:min	2
+../Core/Src/fuzzy.c:52:7:max	2
+../Core/Src/fuzzy.c:57:7:mfTriang	6
+../Core/Src/fuzzy.c:73:7:mfTrap	10
+../Core/Src/fuzzy.c:99:7:run_fuzzy	1
+../Core/Src/fuzzy.c:229:6:limit_range	3
