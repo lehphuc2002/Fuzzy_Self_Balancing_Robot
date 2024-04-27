@@ -38,9 +38,9 @@ typedef struct {
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define THETA_OFFSET 2.5
-#define THETA_OVER 40
+#define THETA_OVER 60
 #define PI 3.14159265358979323846
-#define K_THETA 10
+#define K_THETA 8
 #define K_THETA_DOT 100
 #define K_UK_FUZZY 3199
 /* USER CODE END PD */
@@ -483,7 +483,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		else if(Parameters.uk_fuzzy < 0)
 		{
 			motor_reverse();
-			pwm_out(-(Parameters.uk_fuzzy));
+			pwm_out((-(Parameters.uk_fuzzy))); //hardware
 			forward = 0; //debug
 			reverse = 1;
 		}
@@ -535,6 +535,7 @@ void motor_stop()
 void pwm_out(float duty) //duty 0->1 (not 0->100), uk -1->1
 {
 	if (duty > 1) duty = 1;
+	if (duty < 0) duty = 0;
 	htim3.Instance->CCR1 = (htim3.Instance->ARR) * (duty + 0.025); //hardware
 	htim4.Instance->CCR2 = (htim4.Instance->ARR) * (duty);
 }
