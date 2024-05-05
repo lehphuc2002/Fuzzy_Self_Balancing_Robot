@@ -37,11 +37,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  00017d5f  00000000  00000000  0001ab77  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00011445  00000000  00000000  000328d6  2**0
+ 17 .debug_line   00011443  00000000  00000000  000328d6  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0008cade  00000000  00000000  00043d1b  2**0
+ 18 .debug_str    0008cade  00000000  00000000  00043d19  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  000d07f9  2**0
+ 19 .comment      00000043  00000000  00000000  000d07f7  2**0
                   CONTENTS, READONLY
  20 .debug_frame  000045f4  00000000  00000000  000d083c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -1780,11 +1780,11 @@ float run_fuzzy(float x1, float x2) {
  800130e:	af08      	add	r7, sp, #32
  8001310:	60f8      	str	r0, [r7, #12]
  8001312:	60b9      	str	r1, [r7, #8]
-//  theta.NB = mfTrap(x1, -5.0f, -1.0f, -c1, -c2 + 0.25); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (theta)
-//  theta.NS = mfTrap(x1, -c1, -c2 + 0.25, -c3 +0.25, 0);
-//  theta.ZE = mfTrap(x1, -c2 + 0.25, -c3 + 0.25, c3 - 0.28, c2 - 0.25);
-//  theta.PS = mfTrap(x1, 0, c3 - 0.28, c2 - 0.25, c1 - 0.14);
-//  theta.PB = mfTrap(x1, c2 - 0.25, c1 -0.14, 1.0f, 5.0f);
+  Theta_struct theta;
+  Thetadot_struct theta_dot;
+  Uk_struct u_dot;
+
+  // parameters theta
   c1 = 0.5f;
  8001314:	4ba8      	ldr	r3, [pc, #672]	@ (80015b8 <run_fuzzy+0x2b0>)
  8001316:	f04f 527c 	mov.w	r2, #1056964608	@ 0x3f000000
@@ -1968,8 +1968,7 @@ float run_fuzzy(float x1, float x2) {
  80014ba:	4a42      	ldr	r2, [pc, #264]	@ (80015c4 <run_fuzzy+0x2bc>)
  80014bc:	601a      	str	r2, [r3, #0]
 
-//  theta_dot.NB = mfTriang(x2, -5.0f, -1.0f, -d1); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (thetadot)
-  theta_dot.NB = mfTrap(x1, -5.0f, -1.0f, -d1, -d2);
+  theta_dot.NB = mfTrap(x1, -5.0f, -1.0f, -d1, -d2); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (thetadot)
  80014be:	4b45      	ldr	r3, [pc, #276]	@ (80015d4 <run_fuzzy+0x2cc>)
  80014c0:	681b      	ldr	r3, [r3, #0]
  80014c2:	f083 4200 	eor.w	r2, r3, #2147483648	@ 0x80000000
@@ -2029,7 +2028,6 @@ float run_fuzzy(float x1, float x2) {
  800153e:	f7ff fe60 	bl	8001202 <mfTrap>
  8001542:	4603      	mov	r3, r0
  8001544:	643b      	str	r3, [r7, #64]	@ 0x40
-//  theta_dot.PB = mfTriang(x2, d1, 1.0f, 5.0f);
 
   // calculate uk_fuzzy (-1->1) base on MAX-MIN, "and" => MIN
 

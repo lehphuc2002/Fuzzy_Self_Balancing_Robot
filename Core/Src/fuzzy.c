@@ -101,15 +101,6 @@ float run_fuzzy(float x1, float x2) {
   Uk_struct u_dot;
 
   // parameters theta
-//  c1 = 0.7f;
-//  c2 = 0.55f;
-//  c3 = 0.3f;
-//
-//  theta.NB = mfTrap(x1, -5.0f, -1.0f, -c1, -c2 + 0.25); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (theta)
-//  theta.NS = mfTrap(x1, -c1, -c2 + 0.25, -c3 +0.25, 0);
-//  theta.ZE = mfTrap(x1, -c2 + 0.25, -c3 + 0.25, c3 - 0.28, c2 - 0.25);
-//  theta.PS = mfTrap(x1, 0, c3 - 0.28, c2 - 0.25, c1 - 0.14);
-//  theta.PB = mfTrap(x1, c2 - 0.25, c1 -0.14, 1.0f, 5.0f);
   c1 = 0.5f;
   c2 = 0.25f;
   c3 = 0.07f;
@@ -125,13 +116,11 @@ float run_fuzzy(float x1, float x2) {
   d2 = 0.12f;
   d3 = 0.07f;
 
-//  theta_dot.NB = mfTriang(x2, -5.0f, -1.0f, -d1); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (thetadot)
-  theta_dot.NB = mfTrap(x1, -5.0f, -1.0f, -d1, -d2);
+  theta_dot.NB = mfTrap(x1, -5.0f, -1.0f, -d1, -d2); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (thetadot)
   theta_dot.NS = mfTriang(x2, -1.0f, -d2, -d3);
   theta_dot.ZE = mfTriang(x2, -d3, 0, d3);
   theta_dot.PS = mfTriang(x2, d3, d2, 1.0f);
   theta_dot.PB = mfTrap(x1, d2, d1, 1.0f, 5.0f);
-//  theta_dot.PB = mfTriang(x2, d1, 1.0f, 5.0f);
 
   // calculate uk_fuzzy (-1->1) base on MAX-MIN, "and" => MIN
 
