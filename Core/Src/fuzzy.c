@@ -191,14 +191,6 @@ float run_fuzzy(float x1, float x2) {
   u_dot.PM = max(3, r[14], r[18], r[22]);
   u_dot.PB = max(3, r[19], r[23], r[24]);
 
-//	  u_dot.NB = max(max(r[0], r[1]), r[5]);
-//	  u_dot.NM = max(max(r[2], r[6]), r[10]);
-//	  u_dot.NS = max(max(max(r[3], r[7]), r[11]), r[15]);
-//	  u_dot.ZE = max(max(max(max(r[4], r[8]), r[12]), r[16]), r[20]);
-//	  u_dot.PS = max(max(max(r[9], r[13]), r[17]), r[21]);
-//	  u_dot.PM = max(max(r[14], r[18]), r[22]);
-//	  u_dot.PB = max(max(r[19], r[23]), r[24]);
-
   // weighted average defuzzification method
   float sum_beta;
   float sum_beta_y;
