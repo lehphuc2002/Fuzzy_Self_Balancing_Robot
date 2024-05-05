@@ -34,7 +34,7 @@
 #include <math.h>
 #include "mpu6050.h"
 
-
+#define RAD_TO_DEG 57.295779513082320876798154814105
 
 #define WHO_AM_I_REG 0x75
 #define PWR_MGMT_1_REG 0x6B

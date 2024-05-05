@@ -1,6 +1,6 @@
-../Core/Src/fuzzy.c:28:7:max	24	static
-../Core/Src/fuzzy.c:47:7:min	16	static
-../Core/Src/fuzzy.c:57:7:mfTriang	40	static
-../Core/Src/fuzzy.c:73:7:mfTrap	40	static
-../Core/Src/fuzzy.c:99:7:run_fuzzy	264	static
-../Core/Src/fuzzy.c:223:6:limit_range	16	static
+../Core/Src/fuzzy.c:25:7:max	24	static
+../Core/Src/fuzzy.c:44:7:min	16	static
+../Core/Src/fuzzy.c:54:7:mfTriang	40	static
+../Core/Src/fuzzy.c:70:7:mfTrap	40	static
+../Core/Src/fuzzy.c:96:7:run_fuzzy	272	static
+../Core/Src/fuzzy.c:226:6:limit_range	16	static

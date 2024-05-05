@@ -40,7 +40,7 @@ typedef struct {
 #define THETA_OFFSET 2.5
 #define THETA_OVER 60
 #define PI 3.14159265358979323846
-#define K_THETA 8
+#define K_THETA 9
 #define K_THETA_DOT 100
 #define K_UK_FUZZY 3199
 /* USER CODE END PD */
@@ -238,7 +238,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 639;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 9999;
+  htim1.Init.Period = 499;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -464,11 +464,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		MPU6050_Read_All(&hi2c1, &MPU6050);
 		Fuzzy_Process();
-//		if ((Parameters.theta <= THETA_OFFSET + 4 && Parameters.theta >= THETA_OFFSET - 2)
-//			|| Parameters.theta < -THETA_OVER || Parameters.theta > THETA_OVER)
-//		{
-//			pwm_out(0);
-//		}
 		if (Parameters.theta < -THETA_OVER || Parameters.theta > THETA_OVER)
 		{
 			motor_stop();
@@ -477,14 +472,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		{
 			motor_forward();
 			pwm_out(Parameters.uk_fuzzy);
-			forward = 1; //debug
+			forward = 1; //Just4Debugging
 			reverse = 0;
 		}
 		else if(Parameters.uk_fuzzy < 0)
 		{
 			motor_reverse();
-			pwm_out((-(Parameters.uk_fuzzy))); //hardware
-			forward = 0; //debug
+			pwm_out((-(Parameters.uk_fuzzy)));
+			forward = 0; //Just4Debugging
 			reverse = 1;
 		}
 
@@ -536,7 +531,7 @@ void pwm_out(float duty) //duty 0->1 (not 0->100), uk -1->1
 {
 	if (duty > 1) duty = 1;
 	if (duty < 0) duty = 0;
-	htim3.Instance->CCR1 = (htim3.Instance->ARR) * (duty + 0.025); //hardware
+	htim3.Instance->CCR1 = (htim3.Instance->ARR) * (duty); //hardware
 	htim4.Instance->CCR2 = (htim4.Instance->ARR) * (duty);
 }
 

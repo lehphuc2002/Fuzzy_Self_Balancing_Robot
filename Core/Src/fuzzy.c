@@ -1,8 +1,5 @@
 /*
  * fuzzy.c
- *
- *  Created on: Mar 30, 2024
- *
  */
 
 #include "fuzzy.h"
@@ -103,29 +100,38 @@ float run_fuzzy(float x1, float x2) {
   Thetadot_struct theta_dot;
   Uk_struct u_dot;
 
-  // calculate theta (-1->1)
-  c1 = 0.75f;
-  c2 = 0.55f;
-  c3 = 0.38f;
+  // parameters theta
+//  c1 = 0.7f;
+//  c2 = 0.55f;
+//  c3 = 0.3f;
+//
+//  theta.NB = mfTrap(x1, -5.0f, -1.0f, -c1, -c2 + 0.25); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (theta)
+//  theta.NS = mfTrap(x1, -c1, -c2 + 0.25, -c3 +0.25, 0);
+//  theta.ZE = mfTrap(x1, -c2 + 0.25, -c3 + 0.25, c3 - 0.28, c2 - 0.25);
+//  theta.PS = mfTrap(x1, 0, c3 - 0.28, c2 - 0.25, c1 - 0.14);
+//  theta.PB = mfTrap(x1, c2 - 0.25, c1 -0.14, 1.0f, 5.0f);
+  c1 = 0.5f;
+  c2 = 0.25f;
+  c3 = 0.07f;
 
-  theta.NB = mfTrap(x1, -5.0f, -1.0f, -c1, -c2); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (theta)
-  theta.NS = mfTrap(x1, -c1, -c2, -c3, -0);
-  theta.ZE = mfTrap(x1, -c2, -c3, c3, c2);
-  theta.PS = mfTrap(x1, 0, c3 - 0.03, c2 - 0.03, c1 - 0.03);
-  theta.PB = mfTrap(x1, c2 - 0.03, c1 - 0.03, 1.0f, 5.0f);
+  theta.NB = mfTrap(x1, -5.0f, -1.0f, -c1, -c2 ); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (theta)
+  theta.NS = mfTrap(x1, -c1, -c2 , -c3 , 0);
+  theta.ZE = mfTrap(x1, -c2 , -c3 , c3 - 0.055, c2 - 0.18);
+  theta.PS = mfTrap(x1, 0, c3 - 0.055, c2 - 0.18, c1 - 0.18);
+  theta.PB = mfTrap(x1, c2 - 0.18, c1 - 0.18, 1.0f, 5.0f);
 
-  // calculate theta_dot (-1->1)
-//  d1 = 0.3f;
-//  d2 = 0.03f;
-//  d3 = 0.5f;
-  d1 = 0.3f;
-  d2 = 0.2f;
-  d3 = 0.08f;
-  theta_dot.NB = mfTriang(x2, -5.0f, -1.0f, -d1); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (thetadot)
+  // parameters theta_dot
+  d1 = 0.18f;
+  d2 = 0.12f;
+  d3 = 0.07f;
+
+//  theta_dot.NB = mfTriang(x2, -5.0f, -1.0f, -d1); // ve hinh dinh nghia cac gia tri ngon ngu cua bien NB,NS,... (thetadot)
+  theta_dot.NB = mfTrap(x1, -5.0f, -1.0f, -d1, -d2);
   theta_dot.NS = mfTriang(x2, -1.0f, -d2, -d3);
   theta_dot.ZE = mfTriang(x2, -d3, 0, d3);
   theta_dot.PS = mfTriang(x2, d3, d2, 1.0f);
-  theta_dot.PB = mfTriang(x2, d1, 1.0f, 5.0f);
+  theta_dot.PB = mfTrap(x1, d2, d1, 1.0f, 5.0f);
+//  theta_dot.PB = mfTriang(x2, d1, 1.0f, 5.0f);
 
   // calculate uk_fuzzy (-1->1) base on MAX-MIN, "and" => MIN
 
@@ -138,8 +144,7 @@ float run_fuzzy(float x1, float x2) {
   r[3] = min(theta.PS, theta_dot.NB); // NS
 
   r[4] = min(theta.PB, theta_dot.NB); // ZE
-  //-----------------------
-
+  //----------------------------------------------
   r[5] = min(theta.NB, theta_dot.NS); // NB
 
   r[6] = min(theta.NS, theta_dot.NS); // NM
@@ -149,8 +154,7 @@ float run_fuzzy(float x1, float x2) {
   r[8] = min(theta.PS, theta_dot.NS); // ZE
 
   r[9] = min(theta.PB, theta_dot.NS); // PS
-  //-----------------------
-
+  //----------------------------------------------
   r[10] = min(theta.NB, theta_dot.ZE); // NM
 
   r[11] = min(theta.NS, theta_dot.ZE); // NS
@@ -160,7 +164,7 @@ float run_fuzzy(float x1, float x2) {
   r[13] = min(theta.PS, theta_dot.ZE); // PS
 
   r[14] = min(theta.PB, theta_dot.ZE); // PM
-  //-----------------------
+  //----------------------------------------------
   r[15] = min(theta.NB, theta_dot.PS); // NS
 
   r[16] = min(theta.NS, theta_dot.PS); // ZE
@@ -170,8 +174,7 @@ float run_fuzzy(float x1, float x2) {
   r[18] = min(theta.PS, theta_dot.PS); // PM
 
   r[19] = min(theta.PB, theta_dot.PS); // PB
-  //-----------------------
-
+  //----------------------------------------------
   r[20] = min(theta.NB, theta_dot.PB); // ZE
 
   r[21] = min(theta.NS, theta_dot.PB); // PS
@@ -210,9 +213,9 @@ float run_fuzzy(float x1, float x2) {
   // weighted average defuzzification method
   float sum_beta;
   float sum_beta_y;
-  u_S = 0.35f;
-  u_M = 0.58f;
-  u_B = 0.8f;
+  u_S = 0.3f;
+  u_M = 0.62f;
+  u_B = 0.82f;
   sum_beta = u_dot.NB + u_dot.NM + u_dot.NS + u_dot.ZE + u_dot.PS + u_dot.PM + u_dot.PB;
   sum_beta_y = -u_B * u_dot.NB + -u_M * u_dot.NM + -u_S * u_dot.NS + 0 * u_dot.ZE + u_S * u_dot.PS + u_M * u_dot.PM + u_B * u_dot.PB;
   out = sum_beta_y / sum_beta; // Homework3 :>
