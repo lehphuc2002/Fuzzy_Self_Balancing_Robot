@@ -3,4 +3,4 @@
 ../Core/Src/fuzzy.c:54:7:mfTriang	6
 ../Core/Src/fuzzy.c:70:7:mfTrap	10
 ../Core/Src/fuzzy.c:96:7:run_fuzzy	1
-../Core/Src/fuzzy.c:215:6:limit_range	3
+../Core/Src/fuzzy.c:207:6:limit_range	3

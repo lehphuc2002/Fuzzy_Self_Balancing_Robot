@@ -101,7 +101,7 @@ float run_fuzzy(float x1, float x2) {
   Uk_struct u_dot;
 
   // parameters theta
-  c1 = 0.5f;
+  c1 = 0.4f;
   c2 = 0.25f;
   c3 = 0.07f;
 
