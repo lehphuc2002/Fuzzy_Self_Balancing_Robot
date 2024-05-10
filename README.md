@@ -19,5 +19,5 @@ Please refer to the `fuzzy.c` file which includes triangle and trapezoid fuzzy l
 
 ## Demo
 
-![Fuzzy Self-Balancing Robot Demo1](demo.gif)
+![Fuzzy Self-Balancing Robot Demo1](demo.gif) \n
 ![Fuzzy Self-Balancing Robot Demo2](demo2.gif)
